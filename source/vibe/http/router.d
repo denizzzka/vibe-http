@@ -58,37 +58,13 @@ import std.functional;
 			$(LI Multiple placeholders and raw wildcards can be combined: `"/:x/:y/*"`)
 		)
 */
-final class URLRouter : HTTPServerRequestHandler {
+final class URLRouter : URLRouterBase, HTTPServerRequestHandler {
 	@safe:
-
-	private {
-		MatchTree!Route m_routes;
-		string m_prefix;
-		bool m_computeBasePath;
-	}
 
 	this(string prefix = null)
 	{
-		m_prefix = prefix;
+		super(prefix);
 	}
-
-	/** Sets a common prefix for all registered routes.
-
-		All routes will implicitly have this prefix prepended before being
-		matched against incoming requests.
-	*/
-	@property string prefix() const { return m_prefix; }
-
-	/** Controls the computation of the "routerRootDir" parameter.
-
-		This parameter is available as `req.params["routerRootDir"]` and
-		contains the relative path to the base path of the router. The base
-		path is determined by the `prefix` property.
-
-		Note that this feature currently is requires dynamic memory allocations
-		and is opt-in for this reason.
-	*/
-	@property void enableRootDir(bool enable) { m_computeBasePath = enable; }
 
 	/// Returns a single route handle to conveniently register multiple methods.
 	URLRoute route(string path)
@@ -314,6 +290,39 @@ final class URLRouter : HTTPServerRequestHandler {
 		}
 		test((HTTPServerRequest req, HTTPServerResponse res) {});
 	}
+}
+
+class URLRouterBase {
+	@safe:
+
+	private {
+		MatchTree!Route m_routes;
+		string m_prefix;
+		bool m_computeBasePath;
+	}
+
+	this(string prefix = null)
+	{
+		m_prefix = prefix;
+	}
+
+	/** Sets a common prefix for all registered routes.
+
+		All routes will implicitly have this prefix prepended before being
+		matched against incoming requests.
+	*/
+	@property string prefix() const { return m_prefix; }
+
+	/** Controls the computation of the "routerRootDir" parameter.
+
+		This parameter is available as `req.params["routerRootDir"]` and
+		contains the relative path to the base path of the router. The base
+		path is determined by the `prefix` property.
+
+		Note that this feature currently is requires dynamic memory allocations
+		and is opt-in for this reason.
+	*/
+	@property void enableRootDir(bool enable) { m_computeBasePath = enable; }
 }
 
 ///
