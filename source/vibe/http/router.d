@@ -162,19 +162,6 @@ final class URLRouter : URLRouterBase, HTTPServerRequestHandler {
 	/// ditto
 	URLRouter any(string url_match, HTTPServerRequestDelegate handler) { return any!HTTPServerRequestDelegate(url_match, handler); }
 
-
-	/** Rebuilds the internal matching structures to account for newly added routes.
-
-		This should be used after a lot of routes have been added to the router, to
-		force eager computation of the match structures. The alternative is to
-		let the router lazily compute the structures when the first request happens,
-		which can delay this request.
-	*/
-	void rebuild()
-	{
-		m_routes.rebuildGraph();
-	}
-
 	/// Handles a HTTP request by dispatching it to the registered route handlers.
 	void handleRequest(HTTPServerRequest req, HTTPServerResponse res)
 	{
@@ -222,15 +209,6 @@ final class URLRouter : URLRouterBase, HTTPServerRequestHandler {
 		}
 
 		logDebug("no route match: %s %s", req.method, req.requestURL);
-	}
-
-	/// Returns all registered routes as const AA
-	const(Route)[] getAllRoutes()
-	{
-		auto routes = new Route[m_routes.terminalCount];
-		foreach (i, ref r; routes)
-			r = m_routes.getTerminalData(i);
-		return routes;
 	}
 
 	template isValidHandler(Handler) {
@@ -323,6 +301,27 @@ class URLRouterBase {
 		and is opt-in for this reason.
 	*/
 	@property void enableRootDir(bool enable) { m_computeBasePath = enable; }
+
+	/** Rebuilds the internal matching structures to account for newly added routes.
+
+		This should be used after a lot of routes have been added to the router, to
+		force eager computation of the match structures. The alternative is to
+		let the router lazily compute the structures when the first request happens,
+		which can delay this request.
+	*/
+	void rebuild()
+	{
+		m_routes.rebuildGraph();
+	}
+
+	/// Returns all registered routes as const AA
+	const(Route)[] getAllRoutes()
+	{
+		auto routes = new Route[m_routes.terminalCount];
+		foreach (i, ref r; routes)
+			r = m_routes.getTerminalData(i);
+		return routes;
+	}
 }
 
 ///
