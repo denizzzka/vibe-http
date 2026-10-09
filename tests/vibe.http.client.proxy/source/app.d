@@ -44,25 +44,44 @@ private void testProxyRequest(string label, string target_schema, string target_
 
 void main()
 {
-	// The target server listens on "::" so that the proxy can reach it over
+	// The target servers listen on "::" so that the proxy can reach them over
 	// both IPv4 and IPv6.
-	auto settings = new HTTPServerSettings;
-	settings.port = 0;
-	settings.bindAddresses = ["::"];
-	auto listener = listenHTTP(settings, &handleRequest);
-	scope(exit) listener.stopListening();
-	auto target_port = listener.bindAddresses[0].port;
+	auto plain_settings = new HTTPServerSettings;
+	plain_settings.port = 0;
+	plain_settings.bindAddresses = ["::"];
+	auto plain_listener = listenHTTP(plain_settings, &handleRequest);
+	scope(exit) plain_listener.stopListening();
+
+	auto tls_settings = new HTTPServerSettings;
+	tls_settings.port = 0;
+	tls_settings.bindAddresses = ["::"];
+	tls_settings.tlsContext = createTLSContext(TLSContextKind.server);
+	tls_settings.tlsContext.useCertificateChainFile(environment.get("TLS_CERT", "../server.crt"));
+	tls_settings.tlsContext.usePrivateKeyFile(environment.get("TLS_KEY", "../server.key"));
+	auto tls_listener = listenHTTP(tls_settings, &handleRequest);
+	scope(exit) tls_listener.stopListening();
 
 	static immutable proxies = [
 		tuple("socks5", "PROXY_SOCKS5"),
 		tuple("socks5+auth", "PROXY_SOCKS5_AUTH"),
+		tuple("http", "PROXY_HTTP"),
+		tuple("http+auth", "PROXY_HTTP_AUTH"),
+		tuple("https", "PROXY_HTTPS"),
+		tuple("https+auth", "PROXY_HTTPS_AUTH"),
+	];
+
+	auto targets = [
+		tuple("http", plain_listener.bindAddresses[0].port),
+		tuple("https", tls_listener.bindAddresses[0].port),
 	];
 
 	foreach (target_host; ["127.0.0.1", "localhost"]) {
-		foreach (p; proxies) {
-			auto proxy = proxyFromEnvironment(p[1]);
-			if (proxy.schema !is null)
-				testProxyRequest(p[0], "http", target_host, target_port, proxy);
+		foreach (t; targets) {
+			foreach (p; proxies) {
+				auto proxy = proxyFromEnvironment(p[1]);
+				if (proxy.schema !is null)
+					testProxyRequest(p[0], t[0], target_host, t[1], proxy);
+			}
 		}
 	}
 
