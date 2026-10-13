@@ -17,7 +17,7 @@ import vibe.container.ringbuffer : RingBuffer;
 import vibe.core.connectionpool;
 import vibe.core.core;
 import vibe.core.log;
-import vibe.core.socks;
+import vibe.stream.socks : createSocks5Stream;
 import vibe.data.json;
 import vibe.inet.message;
 import vibe.inet.url;
@@ -791,8 +791,12 @@ private void establishConnection()
 			NetworkAddress spproxyAddr = resolveHost(m_settings.proxyURL.host, m_settings.dnsAddressFamily, true,
 				m_settings.connectTimeout);
 			spproxyAddr.port = m_settings.proxyURL.port ? m_settings.proxyURL.port : 1080;
-			m_conn = connectTCPSocks5(spproxyAddr, m_server, m_port, m_settings.proxyURL.username,
-				m_settings.proxyURL.password, m_settings.networkInterface, m_settings.connectTimeout);
+			auto proxyConn = connectTCPWithTimeout(spproxyAddr, m_settings.networkInterface, m_settings.connectTimeout);
+			if (m_settings.readTimeout != Duration.max)
+				proxyConn.readTimeout = m_settings.readTimeout;
+			m_conn = proxyConn;
+			m_stream = createSocks5Stream(m_conn, m_server, m_port, m_settings.proxyURL.username,
+				m_settings.proxyURL.password);
 			break;
 	}
 }

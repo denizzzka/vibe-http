@@ -8,6 +8,7 @@ authors "Sönke Ludwig" "Mathias 'Geod24' Lang" "Etienne Cimon" "Martin Nowak" \
 	"Francesco Galla" "Sebastian Wilzbach" "Mihails 'Dicebot' Strasuns" \
 	"over 200 contributors"
 
+dependency "vibe-inet:crypto" version="~>1.0"
 dependency "vibe-inet" version="~>1.0"
 dependency "vibe-stream:socks" path="/home/denizzz/.local/share/opencode/worktree/506a1b092795662e222d5072c26f056abfea5aa5/add_socks5_support"
 dependency "vibe-stream:tls" path="/home/denizzz/.local/share/opencode/worktree/506a1b092795662e222d5072c26f056abfea5aa5/add_socks5_support"
