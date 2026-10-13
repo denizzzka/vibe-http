@@ -8,7 +8,7 @@ authors "Sönke Ludwig" "Mathias 'Geod24' Lang" "Etienne Cimon" "Martin Nowak" \
 	"Francesco Galla" "Sebastian Wilzbach" "Mihails 'Dicebot' Strasuns" \
 	"over 200 contributors"
 
-dependency "vibe-core" repository="git+https://github.com/vibe-d/vibe-core.git" version="a7dcf20"
+dependency "vibe-core" repository="git+https://github.com/denizzzka/vibe-core.git" version="9f7f7cf0f230469ec93040112cb85e3cb9dbaa1e"
 dependency "vibe-inet:crypto" version="~>1.0"
 dependency "vibe-inet" version="~>1.0"
 dependency "vibe-stream:tls" version="~>1.0"
