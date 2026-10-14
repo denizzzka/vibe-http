@@ -47,6 +47,10 @@ jobs:
       if: runner.os == 'Linux'
       run: sudo apt-get update && sudo apt-get install -y microsocks tinyproxy stunnel4
 
+    - name: Verify proxy servers installed
+      if: runner.os == 'Linux'
+      run: command -v microsocks tinyproxy stunnel4
+
     - name: '[POSIX] Run tests'
       env:
         VIBED_DRIVER: vibe-core
