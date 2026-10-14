@@ -205,7 +205,10 @@ auto connectHTTP(string host, ushort port = 0, bool use_tls = false, const(HTTPC
 	auto sttngs = settings ? settings : defaultSettings;
 
 	if (port == 0) port = use_tls ? 443 : 80;
-	auto ckey = ConnInfo(host, sttngs.tlsPeerName, port, use_tls, sttngs.proxyURL.schema, sttngs.proxyURL.host, sttngs.proxyURL.port, sttngs.networkInterface);
+	auto proxyAddr = sttngs.proxyURL.schema !is null
+		? sttngs.proxyURL.schema ~ "://" ~ sttngs.proxyURL.host
+		: null;
+	auto ckey = ConnInfo(host, sttngs.tlsPeerName, port, use_tls, proxyAddr, sttngs.proxyURL.port, sttngs.networkInterface);
 
 	ConnectionPool!HTTPClient pool;
 	s_connections.opApply((ref c) @safe {
@@ -215,7 +218,7 @@ auto connectHTTP(string host, ushort port = 0, bool use_tls = false, const(HTTPC
 	});
 
 	if (!pool) {
-		logDebug("Create HTTP client pool %s(%s):%s %s proxy %s", host, sttngs.tlsPeerName, port, use_tls, sttngs.proxyURL.schema !is null ? sttngs.proxyURL.schema ~ "://" ~ sttngs.proxyURL.host ~ ":" ~ sttngs.proxyURL.port.to!string : "none");
+		logDebug("Create HTTP client pool %s(%s):%s %s proxy %s", host, sttngs.tlsPeerName, port, use_tls, proxyAddr !is null ? proxyAddr ~ ":" ~ sttngs.proxyURL.port.to!string : "none");
 		pool = new ConnectionPool!HTTPClient({
 				auto ret = new HTTPClient;
 				ret.connect(host, port, use_tls, sttngs);
@@ -249,7 +252,6 @@ private struct ConnInfo {
 	string tlsPeerName;
 	ushort port;
 	bool useTLS;
-	string proxySchema;
 	string proxyIP;
 	ushort proxyPort;
 	NetworkAddress bind_addr;
